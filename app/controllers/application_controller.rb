@@ -16,16 +16,33 @@ class ApplicationController < Sinatra::Base
 		erb :signup
 	end
 
+
 	post "/signup" do
-		#your code here!
+  	user = User.new(:username => params[:username], :password => params[:password])#:password comes form the has_secure_password macro
+		#Because our user has has_secure_password, we won't be able to save this to the database unless our user filled out the password field.
+		if user.save #you will only become a user if you fill out the password field.
+				redirect "/login" #redirects to login
+		else
+			redirect "/failure"
+		#Calling user.save will return false if the user can't be persisted
+		end
+
 	end
 
 	get "/login" do
 		erb :login
 	end
 
+
+#checking for a user in our database, password is handled by the authenticate method from has_secure_password
 	post "/login" do
-		#your code here!
+		user = User.find_by(:username => params[:username])
+		if user && user.authenticate(params[:password])
+			session[:user_id] = user.id
+			redirect "/success"
+		else
+			redirect "failure"
+		end
 	end
 
 	get "/success" do
